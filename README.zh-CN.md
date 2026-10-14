@@ -1,7 +1,7 @@
 # @ssk_dev/rpiv-ask-user-question-lean
 
 <!-- token-benchmark:summary:start -->
-> **Token 基准：Lean 220，上游 `@juicesharp/rpiv-ask-user-question@2.12.0` 1,258，减少 82.5%。**
+> **Token 基准：Lean 220，上游 `@juicesharp/rpiv-ask-user-question@2.13.8` 1,258，减少 82.5%。**
 <!-- token-benchmark:summary:end -->
 > **完整配置参考：** [查看 Pi Lean Setup](https://github.com/kunkun9527/my-lean-pi-setup)
 
@@ -40,16 +40,16 @@ ask_user_question
 
 | 版本 | 工具与 Prompt 构成 | 合计 |
 | --- | --- | ---: |
-| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.12.1` | `ask_user_question` (220) | **220** |
-| 上游 `@juicesharp/rpiv-ask-user-question@2.12.0` | `ask_user_question` (1,258) | **1,258** |
+| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.8` | `ask_user_question` (220) | **220** |
+| 上游 `@juicesharp/rpiv-ask-user-question@2.13.8` | `ask_user_question` (1,258) | **1,258** |
 
 节省 **1,038 tokens（82.5%）**。
-测量环境为 Pi 1.0.2 的独立临时进程、空白工作目录与空白配置。排除内置工具、Skills、上下文文件、会话历史、用户消息、无关扩展、运行时 UI 与 Slash Commands；计入扩展的 `before_agent_start` 注入。Token 是按 `ceil(字符数 / 4)` 计算的固定字符代理估算，并非模型 tokenizer 实际计费值。
+测量环境为 Pi 1.2.0 的独立临时进程、空白工作目录与空白配置。排除内置工具、Skills、上下文文件、会话历史、用户消息、无关扩展、运行时 UI 与 Slash Commands；计入扩展的 `before_agent_start` 注入。Token 是按 `ceil(字符数 / 4)` 计算的固定字符代理估算，并非模型 tokenizer 实际计费值。
 <!-- token-benchmark:benchmark:end -->
 
 ## 版本说明
 
-上游运行时锁定为 `@juicesharp/rpiv-ask-user-question@2.12.0`。
+上游运行时锁定为 `@juicesharp/rpiv-ask-user-question@2.13.8`。
 
 ## 本地开发
 
