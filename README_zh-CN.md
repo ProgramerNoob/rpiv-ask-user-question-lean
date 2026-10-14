@@ -9,6 +9,20 @@
 
 基于 [`@juicesharp/rpiv-ask-user-question`](https://github.com/juicesharp/rpiv-mono/tree/main/packages/rpiv-ask-user-question) 的精简封装。在完整保留交互式问卷界面与选项校验的同时，精简工具描述与提示词，大幅减少初始化上下文开销。
 
+## 初始化上下文占用对比
+
+<!-- token-benchmark:benchmark:start -->
+单独启用本扩展时，模型可见的常驻初始化上下文如下：
+
+| 版本 | 工具与 Prompt 构成 | 合计 |
+| --- | --- | ---: |
+| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.9` | `ask_user_question` (220) | **220** |
+| 上游 `@juicesharp/rpiv-ask-user-question@2.13.8` | `ask_user_question` (1,258) | **1,258** |
+
+节省 **1,038 tokens（82.5%）**。
+测量环境为 Pi 1.2.0 的独立临时进程、空白工作目录与空白配置。排除内置工具、Skills、上下文文件、会话历史、用户消息、无关扩展、运行时 UI 与 Slash Commands；计入扩展的 `before_agent_start` 注入。Token 是按 `ceil(字符数 / 4)` 计算的固定字符代理估算，并非模型 tokenizer 实际计费值。
+<!-- token-benchmark:benchmark:end -->
+
 ## 核心特性
 
 * 完整交互体验：保留原版问卷交互界面、选项预览以及 RPC 回退机制。
@@ -32,20 +46,6 @@ ask_user_question
 ```
 
 当遇到不明确的需求或需要用户做选择时使用。每次调用可提出 1 到 4 个结构化问题，每个问题提供 2 到 4 个明确选项。
-
-## 初始化上下文占用对比
-
-<!-- token-benchmark:benchmark:start -->
-单独启用本扩展时，模型可见的常驻初始化上下文如下：
-
-| 版本 | 工具与 Prompt 构成 | 合计 |
-| --- | --- | ---: |
-| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.8` | `ask_user_question` (220) | **220** |
-| 上游 `@juicesharp/rpiv-ask-user-question@2.13.8` | `ask_user_question` (1,258) | **1,258** |
-
-节省 **1,038 tokens（82.5%）**。
-测量环境为 Pi 1.2.0 的独立临时进程、空白工作目录与空白配置。排除内置工具、Skills、上下文文件、会话历史、用户消息、无关扩展、运行时 UI 与 Slash Commands；计入扩展的 `before_agent_start` 注入。Token 是按 `ceil(字符数 / 4)` 计算的固定字符代理估算，并非模型 tokenizer 实际计费值。
-<!-- token-benchmark:benchmark:end -->
 
 ## 版本说明
 
