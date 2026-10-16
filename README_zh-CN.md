@@ -16,7 +16,7 @@
 
 | 版本 | 工具与 Prompt 构成 | 合计 |
 | --- | --- | ---: |
-| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.9` | `ask_user_question` (220) | **220** |
+| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.10` | `ask_user_question` (220) | **220** |
 | 上游 `@juicesharp/rpiv-ask-user-question@2.13.8` | `ask_user_question` (1,258) | **1,258** |
 
 节省 **1,038 tokens（82.5%）**。
@@ -25,7 +25,7 @@
 
 ## 核心特性
 
-* 完整交互体验：保留原版问卷交互界面、选项预览以及 RPC 回退机制。
+* 完整交互体验：保留原版问卷交互界面、选项预览以及 RPC 回退机制；在 RPC 宿主（如经 codexhost 接入的 Codex）中改用原生选项卡片，支持返回上一题、提交前检查和多选勾选；这类宿主无法显示预览，因此 RPC 下的提示词会要求模型不使用 preview。
 * 结构化输入验证：支持单选、多选、推荐选项排序与严格的输入校验。
 * 精简 Prompt 描述：精简工具说明中的冗余文本，让模型更轻快地发起澄清提问。
 

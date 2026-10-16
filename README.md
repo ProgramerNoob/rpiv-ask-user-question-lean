@@ -16,7 +16,7 @@ With only this extension enabled, its recurring model-facing initialization cont
 
 | Variant | Tool and prompt contribution | Total |
 | --- | --- | ---: |
-| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.9` | `ask_user_question` (220) | **220** |
+| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.10` | `ask_user_question` (220) | **220** |
 | Upstream `@juicesharp/rpiv-ask-user-question@2.13.8` | `ask_user_question` (1,258) | **1,258** |
 
 This saves **1,038 tokens (82.5%)**.
@@ -25,7 +25,7 @@ Measured with Pi 1.3.0 in separate temporary processes with empty working direct
 
 ## Core Features
 
-* Interactive UI: Retains the full questionnaire interface, preview elements, and RPC fallback.
+* Interactive UI: Retains the full questionnaire interface, preview elements, and RPC fallback; in RPC hosts (e.g. Codex via codexhost), questions become native option cards with back navigation, a review step and multi-select toggles; previews are not shown there, so the RPC prompt tells the model not to send them.
 * Structured validation: Supports single-select and multi-select questions, recommendation ordering, and strict option validation.
 * Compact prompt schema: Strips boilerplate descriptions from the tool definition, cutting prompt overhead without changing runtime behavior.
 
