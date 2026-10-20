@@ -16,7 +16,7 @@
 
 | 版本 | 工具与 Prompt 构成 | 合计 |
 | --- | --- | ---: |
-| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.10` | `ask_user_question` (220) | **220** |
+| Lean `@ssk_dev/rpiv-ask-user-question-lean@2.13.11` | `ask_user_question` (220) | **220** |
 | 上游 `@juicesharp/rpiv-ask-user-question@2.13.8` | `ask_user_question` (1,258) | **1,258** |
 
 节省 **1,038 tokens（82.5%）**。
@@ -45,7 +45,7 @@ pi install npm:@ssk_dev/rpiv-ask-user-question-lean
 ask_user_question
 ```
 
-当遇到不明确的需求或需要用户做选择时使用。每次调用可提出 1 到 4 个结构化问题，每个问题提供 2 到 4 个明确选项。
+当遇到不明确的需求或需要用户做选择时使用。每次调用可提出 1 到 4 个结构化问题，每个问题提供 2 到 4 个明确选项。参数写错时会在校验前自动纠正：单个问题被平铺在顶层、`header`/`options` 漏在只有一项的 `questions` 外面、缺少 `header`（由问题文本生成）；多个问题时不做猜测。
 
 ## 版本说明
 

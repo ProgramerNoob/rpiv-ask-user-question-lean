@@ -192,3 +192,87 @@ test("RPC cards stop after dismissal or abort", async () => {
   assert.equal(aborted.steps.length, 0);
   assert.equal(aborted.result.details.cancelled, true);
 });
+
+const { Value } = await import("typebox/value");
+const options = [
+  { label: "A", description: "a" },
+  { label: "B", description: "b" },
+];
+
+function prepared() {
+  const pi = createPi();
+  extension(pi);
+  const tool = pi.tools[0];
+  const prepare = (args) => tool.prepareArguments(args);
+  const valid = (args) => Value.Check(tool.parameters, args);
+  return { tool, prepare, valid };
+}
+
+test("prepareArguments wraps a flattened single question", () => {
+  const { prepare, valid } = prepared();
+  const flat = { question: "Which?", header: "Pick", options, multiSelect: true };
+  const fixed = prepare(flat);
+
+  assert.equal(valid(flat), false);
+  assert.deepEqual(fixed, { questions: [flat] });
+  assert.equal(valid(fixed), true);
+  assert.deepEqual(prepare(fixed), fixed);
+  assert.deepEqual(prepare({ ...flat, options: JSON.stringify(options) }), { questions: [flat] });
+  assert.equal(flat.options, options);
+});
+
+test("prepareArguments moves top-level header/options into the only question without overwriting", () => {
+  const { prepare, valid } = prepared();
+  const logged = { questions: [{ question: "050-01" }], header: "050-01取舍", options };
+  const fixed = prepare(logged);
+
+  assert.deepEqual(fixed, { questions: [{ question: "050-01", header: "050-01取舍", options }] });
+  assert.equal(valid(fixed), true);
+  assert.deepEqual(logged.questions, [{ question: "050-01" }]);
+
+  const conflict = { questions: [{ question: "Q", header: "Own", options }], header: "Other" };
+  assert.equal(prepare(conflict).questions[0].header, "Own");
+  assert.equal(prepare(conflict).header, "Other");
+});
+
+test("prepareArguments does not guess for several questions", () => {
+  const { prepare, valid } = prepared();
+  const args = { questions: [{ question: "One", header: "H1" }, { question: "Two", header: "H2" }], options };
+  const fixed = prepare(args);
+
+  assert.deepEqual(fixed, args);
+  assert.equal(valid(fixed), false);
+});
+
+test("prepareArguments derives a missing header from the question within the schema limit", () => {
+  const { tool, prepare, valid } = prepared();
+  const max = tool.parameters.properties.questions.items.properties.header.maxLength;
+  assert.equal(max, 16);
+
+  const long = prepare({ questions: [{ question: "  Which\n deployment strategy should we use?  ", options }] });
+  assert.equal(long.questions[0].header, "Which deployment");
+  assert.equal(valid(long), true);
+
+  const emoji = prepare({ questions: [{ question: "😀".repeat(20), options }] });
+  assert.equal(emoji.questions[0].header, "😀".repeat(8));
+  assert.equal(valid(emoji), true);
+
+  assert.equal(prepare({ questions: [{ question: "Short?", options }] }).questions[0].header, "Short?");
+  assert.equal(prepare({ questions: [{ question: "   ", options }] }).questions[0].header, undefined);
+  assert.equal(prepare({ questions: [{ question: "Q", header: "", options }] }).questions[0].header, "");
+});
+
+test("prepareArguments keeps valid input and still decodes upstream JSON strings", () => {
+  const { prepare, valid } = prepared();
+  const good = { questions: [{ question: "Q?", header: "H", options, multiSelect: false }] };
+  assert.deepEqual(prepare(good), good);
+  assert.equal(valid(prepare(good)), true);
+
+  const encoded = prepare({ questions: JSON.stringify([{ question: "Q?", header: "H", options: JSON.stringify(options) }]) });
+  assert.deepEqual(encoded, { questions: [{ question: "Q?", header: "H", options }] });
+
+  for (const odd of [null, "text", 7, [], {}, { questions: "nope" }, { question: 1, options }]) {
+    assert.deepEqual(prepare(odd), odd);
+  }
+  assert.equal(valid(prepare({})), false);
+});

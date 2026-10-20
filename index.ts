@@ -35,6 +35,58 @@ const RPC_PROMPT_GUIDELINES = [
 	"ask_user_question: Each question needs 2-4 options. Put recommendations first with (Recommended); never add Other or Type something. Use multiSelect only for nonexclusive choices. Never use preview; this host cannot display it.",
 ];
 
+// Mirrors upstream tool/types.ts MAX_HEADER_LENGTH (not exported); a test pins it to the real schema.
+const MAX_HEADER_LENGTH = 16;
+const QUESTION_KEYS = ["question", "header", "options", "multiSelect"] as const;
+
+type Args = Record<string, unknown>;
+type Prepare = (args: unknown) => unknown;
+
+const isRecord = (value: unknown): value is Args =>
+	typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** A display-only chip derived from the question text, cut on whole characters. */
+function deriveHeader(question: string): string {
+	let header = "";
+	for (const char of question.replace(/\s+/g, " ").trim()) {
+		if (header.length + char.length > MAX_HEADER_LENGTH) break;
+		header += char;
+	}
+	return header.trimEnd();
+}
+
+// Model mistakes repaired before validation: a lone question flattened to the top
+// level, header/options left beside a one-item `questions`, and a missing header.
+// Nothing is guessed for several questions and no existing value is overwritten.
+function prepareAskArguments(args: unknown, upstream: Prepare): unknown {
+	const decoded = upstream(args);
+	if (!isRecord(decoded)) return decoded;
+	let top: Args = decoded;
+	let questions = top.questions;
+	const pick = (item: Args): Args => {
+		const moved: Args = {};
+		for (const key of QUESTION_KEYS) {
+			if (item[key] === undefined && top[key] !== undefined) moved[key] = top[key];
+		}
+		if (Object.keys(moved).length === 0) return item;
+		top = Object.fromEntries(Object.entries(top).filter(([key]) => !(key in moved)));
+		return { ...item, ...moved };
+	};
+	if (questions === undefined && typeof top.question === "string") {
+		questions = [pick({})];
+	} else if (Array.isArray(questions) && questions.length === 1 && isRecord(questions[0])) {
+		questions = [pick(questions[0])];
+	}
+	if (Array.isArray(questions)) {
+		questions = questions.map((item) =>
+			isRecord(item) && item.header === undefined && typeof item.question === "string" && deriveHeader(item.question)
+				? { ...item, header: deriveHeader(item.question) }
+				: item,
+		);
+	}
+	return upstream(questions === decoded.questions ? top : { ...top, questions });
+}
+
 function removeSchemaDescriptions(value: unknown, seen = new Set<object>()): void {
 	if (value === null || typeof value !== "object" || seen.has(value)) return;
 	seen.add(value);
@@ -231,6 +283,8 @@ export default function (pi: ExtensionAPI): void {
 							description: TOOL_DESCRIPTION,
 							promptSnippet: PROMPT_SNIPPET,
 							promptGuidelines: PROMPT_GUIDELINES,
+							prepareArguments: (args: unknown) =>
+								prepareAskArguments(args, (value) => tool.prepareArguments?.(value as never) ?? value) as never,
 							execute: (id, params, signal, onUpdate, ctx) =>
 								tool.execute(id, params, signal, onUpdate, withRpcCards(ctx, params, signal)),
 						}));
